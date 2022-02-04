@@ -18,16 +18,17 @@ def pre_reconstruction(arr,runnumber,i,pedmap,pedsigma,printtime=False):
     t_ini = time.time()
 
     ################ analysis cards ################################
-    nsigma       = 1.4         # numero di sigma sopra il piedistallo
+    nsigma       = 1.3         # numero di sigma sopra il piedistallo
     cimax        = 5000       # valori del cut sull'imagine
     rebin        = 4       # binnagio finale immagine (deve essre un sottomultipli della 2**2 risluzione di partenza)
-    eps          = 2.2         # maximum distance for the cluster point
-    min_samples  = 50
-    ymin         = 200
-    ymax         = 2304-100
-    xmin         = 0
-    xmax         = 2304
+    eps          = 3         # maximum distance for the cluster point
+    min_samples  = 14
+    xmin         = 200
+    xmax         = 2304-100
+    ymin         = 0
+    ymax         = 2304
     npixx        = 2304
+    min_neighbors_average = 0.75
     self         = []
     
     pedarr_fr    = pedmap
@@ -56,7 +57,10 @@ def pre_reconstruction(arr,runnumber,i,pedmap,pedsigma,printtime=False):
     edges = ctools.arrrebin(self,filtimage,rebin,npixx)
     edcopy = edges.copy()
     edcopyTight = edcopy
-    #edcopyTight = tl.noisereductor(edcopy,rescale,self.options.min_neighbors_average)
+    
+    t_nr_ini = time.time()
+    edcopyTight = tl.noisereductor(edcopy,rescale,min_neighbors_average)
+    t_nr_end = time.time()
 
     # make the clustering with DBSCAN algo
     # this kills all macrobins with N photons < 1
@@ -93,7 +97,7 @@ def pre_reconstruction(arr,runnumber,i,pedmap,pedsigma,printtime=False):
 
         # both core and neighbor samples are saved in the cluster in the event
         if k>-1 and len(x)>1:
-            cl = Cluster(xy,rebin,img_fr,img_fr_zs,'lime',debug=False,fullinfo=False,clID=k)
+            cl = Cluster(xy,rebin,img_fr_satcor,img_fr_zs,'lime',debug=False,fullinfo=False,clID=k)
             cl.iteration = 0
             superclusters.append(cl)
 
@@ -128,6 +132,7 @@ def pre_reconstruction(arr,runnumber,i,pedmap,pedsigma,printtime=False):
 
     t_tot = time.time()
     if printtime:
+        print ("Step 0: Noise Reductor: %.2f seconds / %.2f minutes" % ((t_nr_end-t_nr_ini),(t_nr_end-t_nr_ini)/60))
         print ("Step 1: Clusterization: %.2f seconds / %.2f minutes" % ((t1-t0),(t1-t0)/60))
         print ("Step 2: Cluster information: %.2f seconds / %.2f minutes" % ((t3-t2),(t3-t2)/60))
         print ("Step 3: Variables calculation: %.2f seconds / %.2f minutes" % ((t5-t4),(t5-t4)/60))

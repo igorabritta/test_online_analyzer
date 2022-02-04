@@ -18,8 +18,12 @@ class acquiring_data:
         
         tf  = ROOT.TFile.Open(self.filedir+self.filename)        
         for i,e in enumerate(tf.GetListOfKeys()):
+            justSkip=False
             name=e.GetName()
             obj=e.ReadObj()
+            if obj.InheritsFrom('TH2'):
+                obj.SetDirectory(0)
+                
             if 'pic' in name:
                 patt = re.compile('\S+run(\d+)_ev(\d+)')
                 m = patt.match(name)
@@ -27,8 +31,19 @@ class acquiring_data:
                 event = int(m.group(2))
             if self.maxImages>-1 and event>min(len(tf.GetListOfKeys()),self.maxImages): break
 
-            if not obj.InheritsFrom('TH2'): continue
+            if not obj.InheritsFrom('TH2'): justSkip=True
+            
+            if justSkip:
+                obj.Delete()
+                del obj
+                continue
+                    
             arr = hist2array(obj)
+            
+            ## Solve memory leak
+            obj.Delete()
+            del obj
+            
             np.save("arriving/run%05d_image%04d" % (self.runnumber,i), arr)
             print("Run %05d Image %04d saved successfully " % (self.runnumber,i))
             time.sleep(self.delaytime)
@@ -36,6 +51,8 @@ class acquiring_data:
 
 if __name__ == '__main__':
     from optparse import OptionParser
+    
+    ## python3 acquiring_data.py -r 6332 --max-entries 40 -d 7
     
     parser = OptionParser(usage='%prog h5file1,...,h5fileN [opts] ')
     parser.add_option('-r', '--run', dest='runnumber', default='00000', type='int', help='run number with 5 characteres')
