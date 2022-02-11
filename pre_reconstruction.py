@@ -8,6 +8,7 @@ from sklearn.cluster import DBSCAN
 from cameraChannel import cameraTools as ctools
 from scipy.ndimage import gaussian_filter, median_filter
 from clusterTools import Cluster
+from cython_cygno import nred_cython
 
 class Variables:
     def __init__(self,runnumber,i):
@@ -59,7 +60,8 @@ def pre_reconstruction(arr,runnumber,i,pedmap,pedsigma,printtime=False):
     edcopyTight = edcopy
     
     t_nr_ini = time.time()
-    edcopyTight = tl.noisereductor(edcopy,rescale,min_neighbors_average)
+    #edcopyTight = tl.noisereductor(edcopy,rescale,min_neighbors_average)
+    edcopyTight = nred_cython(edcopy,rescale,min_neighbors_average)
     t_nr_end = time.time()
 
     # make the clustering with DBSCAN algo
