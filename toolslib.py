@@ -3,6 +3,23 @@ import glob, os
 import re
 import sys
 
+def plotclusterdbscan(image,ddb,npixx,rebin):
+    edcopyTight = image
+    cmapcolor = 'gray'
+    figsizeY = 12
+    figsizeX = 12
+    clu = [X[ddb.labels_ == i] for i in range(len(set(ddb.labels_)) - (1 if -1 in ddb.labels_ else 0))]
+    fig = plt.figure(figsize=(figsizeX, figsizeY))
+    plt.imshow(edcopyTight,cmap=cmapcolor, vmin=1,vmax=10,origin='lower')
+    plt.title("Clusters found DDBSCAN")             
+    for j in range(0,np.shape(clu)[0]):
+        ybox = clu[j][:,1]
+        xbox = clu[j][:,0]
+        if (len(ybox) > 0) and (len(xbox) > 0):
+            contours = tl.findedges(ybox,xbox,npixx,rebin)
+            for n, contour in enumerate(contours):
+                plt.plot(contour[:, 0],contour[:, 1], '-r',linewidth=2.5)
+    plt.savefig('plot/fig01.{ext}'.format(ext=ext), bbox_inches='tight', pad_inches=0)
 
 def cluInfo(clusters,points,Ci,image,m_image,scale):
     
