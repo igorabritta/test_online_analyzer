@@ -1,3 +1,7 @@
 pip install Cython
 cython cython_cygno.pyx
 cythonize -a -i cython_cygno.pyx
+
+
+### sudo apt-get install python-numpy
+### sometimes numpy include can be broken

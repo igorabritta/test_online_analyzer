@@ -15,20 +15,21 @@ class Variables:
         self.runnumber = runnumber
         self.nev       = i
 
-def pre_reconstruction(arr,runnumber,i,pedmap,pedsigma,printtime=False):
+def pre_reconstruction(arr,runnumber,i,pedmap,pedsigma,nsigma,printtime=False):
     t_ini = time.time()
 
     ################ analysis cards ################################
-    nsigma       = 1.3         # numero di sigma sopra il piedistallo
+    nsigma       = nsigma         # numero di sigma sopra il piedistallo
     cimax        = 5000       # valori del cut sull'imagine
     rebin        = 4       # binnagio finale immagine (deve essre un sottomultipli della 2**2 risluzione di partenza)
     eps          = 3         # maximum distance for the cluster point
     min_samples  = 14
+    npixx        = np.shape(arr)[0]
     xmin         = 200
-    xmax         = 2304-100
-    ymin         = 0
-    ymax         = 2304
-    npixx        = 2304
+    xmax         = npixx-200
+    ymin         = 200
+    ymax         = npixx-200
+    npixx        = np.shape(arr)[0]
     min_neighbors_average = 0.75
     self         = []
     
@@ -142,7 +143,7 @@ def pre_reconstruction(arr,runnumber,i,pedmap,pedsigma,printtime=False):
     
     return variables
 
-def savedata_totable(df,variables):
+def savedata_totable(tablename,df,variables):
     # Import pandas library
     import pandas as pd
 
@@ -158,14 +159,15 @@ def savedata_totable(df,variables):
         df = df.append(df_new)
 
     # save dataframe.
-    df.to_csv('raw_data.csv', index=False)
+    df.to_csv(tablename, index=False)
+    #print("Data successfully saved")
 
 def opendata_table(filename):
     import pandas as pd
     try:
         df = pd.read_csv(filename)
-        print("Found Table")
+        #print("Found Table")
     except:
-        print("Table not found")
+        #print("Table not found")
         df = []
     return df
